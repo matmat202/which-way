@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Which Way Next? · higher or lower a year later?</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%235b4bb5'/%3E%3Cpath d='M5 22l7-7 5 4 10-10' fill='none' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#5b4bb5">
+<meta name="description" content="Ten years of a US economic number, up to a month in the past: was it higher or lower a year later? Ten a day from FRED, from landslides to near-flat years.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://matmat202.github.io/which-way/">
+<meta property="og:title" content="Which Way Next?">
+<meta property="og:description" content="Oil in July 2007, unemployment in March 2008: higher or lower a year later? Ten a day.">
+<meta property="og:image" content="https://matmat202.github.io/which-way/icons/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{color-scheme:light;--ground:#f6f8f9;--card:#fff;--ink:#16202a;--ink-2:#4f5b66;--ink-3:#66727d;
+  --line:#dde3e7;--sea:#e8f0f4;--land:#cfd9cf;--land-edge:#b4c2b4;--accent:#5b4bb5;
+  --a:#2a78d6;--b:#c2521f;--good:#137a4f;--bad:#b3261e;
+  --f-ui:system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--ground:#11161a;--card:#1a2127;--ink:#e9eef2;
+  --ink-2:#b0bcc6;--ink-3:#93a0ab;--line:#2e3840;--sea:#15232c;--land:#33433a;--land-edge:#465a4d;--accent:#b3a6ff;
+  --a:#5aa2f0;--b:#f08a55;--good:#4cc98d;--bad:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-ui);font-size:15px}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:24px;margin:4px 0 2px}h1 span{color:var(--accent)}
+.sub{color:var(--ink-2);font-size:13px;margin:0 0 14px;line-height:1.45}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px;font-size:13px;color:var(--ink-2)}
+.marks{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+.marks li{width:14px;height:14px;border-radius:4px;border:1px solid var(--line);background:var(--card)}
+.marks li.y{background:var(--good);border-color:var(--good)}
+.marks li.n{background:var(--bad);border-color:var(--bad)}
+.marks li.now{border:2px solid var(--accent)}
+h2.q{font-size:18px;margin:6px 0 10px;text-align:center}
+  color:var(--ink);cursor:pointer;min-height:96px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.out{margin:12px 0 0;text-align:center;min-height:1.4em;font-size:15px}
+.out b.y{color:var(--good)}.out b.n{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;margin:12px 0 0}
+.go{display:flex;justify-content:center;gap:8px;margin:12px 0 0;flex-wrap:wrap}
+.go button{font:inherit;font-weight:600;padding:10px 18px;border:0;border-radius:10px;background:var(--accent);color:var(--card);cursor:pointer}
+.go button.ghost{background:var(--card);color:var(--accent);border:1px solid var(--line)}
+.end{text-align:center}
+.end .score{font-size:40px;font-weight:700;margin:4px 0 0}
+.end p{margin:4px 0;color:var(--ink-2)}
+ol.recap{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:6px}
+ol.recap li{text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:baseline}
+ol.recap li .m{font-weight:700;width:1.2em;flex:none}
+ol.recap li .m.y{color:var(--good)}ol.recap li .m.n{color:var(--bad)}
+ol.recap li .t{flex:1;min-width:0}
+ol.recap li .d{color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{font-size:12px;color:var(--ink-2);line-height:1.5;margin:18px 2px 8px}
+.earlier{text-align:center;margin:.4rem 0}
+[hidden]{display:none!important}
+@media (max-width:480px){.pick button b{font-size:17px}.pick .key{display:none}}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 0}
+.pick button{font:inherit;font-size:18px;font-weight:700;padding:14px 10px;border:2px solid var(--line);border-radius:14px;background:var(--card);
+  color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.pick button:hover:not(:disabled){border-color:var(--accent)}
+.pick button:disabled{cursor:default}
+.pick button.right{border-color:var(--good)}
+.pick button.wrong{border-color:var(--bad)}
+.pick .key{font-size:11px;font-weight:400;color:var(--ink-3)}
+.name{font-size:18px;margin:4px 0 0;text-align:center}
+.asof{margin:2px 0 0;text-align:center;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.q{margin:8px 0 0;text-align:center;font-weight:600}
+#chart svg{display:block;width:100%;height:auto}
+#chart .fut{fill:var(--sea)}
+#chart .qm{fill:var(--ink-3);font-size:44px;font-weight:700}
+#chart .hist{fill:none;stroke:var(--a);stroke-width:2.2;stroke-linejoin:round}
+#chart .ans{fill:none;stroke-width:3;stroke-linejoin:round}
+#chart .up{stroke:var(--good)}#chart .down{stroke:var(--bad)}
+#chart .ans-dot.up{fill:var(--good);stroke:none}#chart .ans-dot.down{fill:var(--bad);stroke:none}
+#chart .now{fill:var(--a);stroke:var(--card);stroke-width:2}
+#chart .level{stroke:var(--ink-3);stroke-dasharray:4 4;stroke-width:1}
+#chart .zero{stroke:var(--line);stroke-width:1}
+#chart .tick{stroke:var(--ink-3)}
+#chart .ax{fill:var(--ink-2);font-size:12px;font-variant-numeric:tabular-nums;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<main>
+<h1>Which Way <span>Next?</span></h1>
+<p class="sub">Ten years of a US economic number, up to a month in the past. A year later, was it higher or lower? Ten a day, from landslides to near-flat years.</p>
+
+<section id="play" aria-live="polite">
+  <div class="bar"><span id="round">Round 1 of 10</span><ol class="marks" id="marks" aria-label="Your answers so far"></ol></div>
+  <h2 class="name" id="name"></h2>
+  <p class="asof" id="asof"></p>
+  <div class="card" id="chart"></div>
+  <p class="q" id="q"></p>
+  <div class="pick" id="pick">
+    <button type="button" data-i="1">▲ Higher<span class="key">↑ or 1</span></button>
+    <button type="button" data-i="0">▼ Lower<span class="key">↓ or 2</span></button>
+  </div>
+  <p class="out" id="out"></p>
+  <div class="go"><button type="button" id="next" hidden>Next</button></div>
+</section>
+
+<section id="end" class="end" hidden>
+  <p id="endday"></p>
+  <div class="score" id="score"></div>
+  <p id="streak"></p>
+  <div class="go">
+    <button type="button" id="share">Copy result</button>
+    <button type="button" id="practice" class="ghost">Practice ten more</button>
+    <button type="button" id="daily" class="ghost" hidden>Back to today's</button>
+  </div>
+  <p id="copied" aria-live="polite"></p>
+  <p class="earlier"><a id="earlier" hidden></a></p>
+  <ol class="recap" id="recap"></ol>
+</section>
+
+<footer>
+  Data: <a href="https://fred.stlouisfed.org/">FRED</a>, Federal Reserve Bank of St. Louis — <span id="count">14</span> monthly US series
+  (unemployment, interest rates, inflation, oil, housing, exchange rates, sentiment, saving), each one that a fixed rule like
+  "always higher" or "same way as last year" gets right no more than about two times in three. Weekly series are monthly averages.
+  A new ten every day at your midnight; everyone gets the same ten. Add <code>?day=2026-11-02</code> to play an earlier day. Nothing leaves your browser.
+  <br>Made by Claude for <a href="https://matmat202.github.io/">matmat202</a>
+</footer>
+</main>
+<link rel="modulepreload" href="way-logic.js">
+<link rel="preload" href="data/series.json" as="fetch" crossorigin>
+<script type="module" src="app.js"></script>
+</body>
+</html>
