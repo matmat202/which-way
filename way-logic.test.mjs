@@ -96,7 +96,13 @@ eq('fed funds was 19.1% in June 1981 (Volcker)', Math.round(val('FEDFUNDS', '198
 eq('oil averaged $133.37 in July 2008', val('MCOILWTICO', '2008-07'), 133.37);
 eq('inflation was 9.0% (seasonally adjusted) in June 2022', Math.round(val('CPIAUCSL', '2022-06') * 10) / 10, 9);
 eq('sentiment hit its record low of 50.0 in June 2022', val('UMCSENT', '2022-06'), 50);
-eq('14 series', S.length, 14);
+eq('Arctic sea ice averaged 3.57M km² in September 2012 (NSIDC record low)', Math.round(val('SEAICE', '2012-09') * 100) / 100, 3.57);
+{
+  const sep = S.find((x) => x.id === 'SEAICE').v.map((v, i) => [v, i]).filter(([v], i) => v !== null && (i + 10) % 12 === 8);
+  eq('and September 2012 is the lowest September on record', val('SEAICE', '2012-09'), Math.min(...sep.map(([v]) => v)));
+}
+eq('sea ice is missing for December 1987 (the satellite gap), not zero', val('SEAICE', '1987-12'), null);
+eq('15 series', S.length, 15);
 ok('every series has a template and a name', S.every((s) => s.fmt.includes('{}') && s.name && s.unit));
 {
   const QS = L.questions(S);

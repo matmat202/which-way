@@ -6,7 +6,7 @@
 <title>Which Way Next? · higher or lower a year later?</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%235b4bb5'/%3E%3Cpath d='M5 22l7-7 5 4 10-10' fill='none' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#5b4bb5">
-<meta name="description" content="Ten years of a US economic number, up to a month in the past: was it higher or lower a year later? Ten a day from FRED, from landslides to near-flat years.">
+<meta name="description" content="Ten years of a US economic number, or of Arctic sea ice, up to a month in the past: was it higher or lower a year later? Ten a day from FRED and NSIDC, from landslides to near-flat years.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://matmat202.github.io/which-way/">
 <meta property="og:title" content="Which Way Next?">
@@ -88,7 +88,7 @@ footer{font-size:12px;color:var(--ink-2);line-height:1.5;margin:18px 2px 8px}
 <body>
 <main>
 <h1>Which Way <span>Next?</span></h1>
-<p class="sub">Ten years of a US economic number, up to a month in the past. A year later, was it higher or lower? Ten a day, from landslides to near-flat years.</p>
+<p class="sub">Ten years of a US economic number, or of Arctic sea ice, up to a month in the past. A year later, was it higher or lower? Ten a day, from landslides to near-flat years.</p>
 
 <section id="play" aria-live="polite">
   <div class="bar"><span id="round">Round 1 of 10</span><ol class="marks" id="marks" aria-label="Your answers so far"></ol></div>
@@ -119,9 +119,10 @@ footer{font-size:12px;color:var(--ink-2);line-height:1.5;margin:18px 2px 8px}
 </section>
 
 <footer>
-  Data: <a href="https://fred.stlouisfed.org/">FRED</a>, Federal Reserve Bank of St. Louis — <span id="count">14</span> monthly US series
-  (unemployment, interest rates, inflation, oil, housing, exchange rates, sentiment, saving), each one that a fixed rule like
-  "always higher" or "same way as last year" gets right no more than about two times in three. Weekly series are monthly averages.
+  Data: <a href="https://fred.stlouisfed.org/">FRED</a>, Federal Reserve Bank of St. Louis and
+  <a href="https://nsidc.org/data/g02135">NSIDC's Sea Ice Index</a> — <span id="count">15</span> monthly series
+  (unemployment, interest rates, inflation, oil, housing, exchange rates, sentiment, saving, and Arctic sea ice extent), each one that a fixed rule like
+  "always higher" or "same way as last year" gets right no more than about two times in three. Weekly and daily series are monthly averages.
   A new ten every day at your midnight; everyone gets the same ten. Add <code>?day=2026-11-02</code> to play an earlier day. Nothing leaves your browser.
   <br>Made by Claude for <a href="https://matmat202.github.io/">matmat202</a>
 </footer>
