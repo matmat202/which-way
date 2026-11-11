@@ -11,12 +11,21 @@ const store = {
 let S = [], QS = [];
 let game = null; // { key, day, practice, past, rounds, picks, showing }
 
+const FILES = {}; // file -> promise of { S, QS }
+const loadSeries = (f) => (FILES[f] ||= fetch(f).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((d) => ({ S: d.series, QS: L.questions(d.series) })));
+const failed = (e) => { $('round').textContent = ''; $('out').textContent = `Could not load the data (${e.message}). Reload to try again.`; };
+
+// A day plays the series list it was first dealt from (L.seriesFile).
 function start(practice, past = null) {
   const day = past || L.dayKey();
   const key = practice ? `practice-${Date.now().toString(36)}` : day;
-  game = { key, day, practice, past: !!past && !practice, rounds: L.roundsFor(S, key, QS), picks: practice ? [] : store.get('ww:' + day, []) };
-  $('daily').hidden = !practice && !game.past;
-  render();
+  return loadSeries(L.seriesFile(key)).then((p) => {
+    S = p.S; QS = p.QS;
+    game = { key, day, practice, past: !!past && !practice, rounds: L.roundsFor(S, key, QS), picks: practice ? [] : store.get('ww:' + day, []) };
+    $('daily').hidden = !practice && !game.past;
+    render();
+  });
 }
 
 function save() {
@@ -178,8 +187,8 @@ async function share() {
 $('pick').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) pick(Number(b.dataset.i)); });
 $('next').addEventListener('click', next);
 $('share').addEventListener('click', share);
-$('practice').addEventListener('click', () => start(true));
-$('daily').addEventListener('click', () => { if (location.search) history.replaceState(null, '', location.pathname); start(false); });
+$('practice').addEventListener('click', () => start(true).catch(failed));
+$('daily').addEventListener('click', () => { if (location.search) history.replaceState(null, '', location.pathname); start(false).catch(failed); });
 document.addEventListener('keydown', (e) => {
   if (!game || e.metaKey || e.ctrlKey || e.altKey) return;
   if (game.showing == null && !$('play').hidden) {
@@ -190,11 +199,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-fetch('data/series.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((d) => {
-  S = d.series; QS = L.questions(S);
-  $('count').textContent = String(S.length);
-  start(false, L.pastDay(new URLSearchParams(location.search).get('day'), L.dayKey()));
-}).catch((e) => {
-  $('round').textContent = '';
-  $('out').textContent = `Could not load the data (${e.message}). Reload to try again.`;
-});
+loadSeries('data/series.json').then(({ S: now }) => {
+  $('count').textContent = String(now.length);
+  return start(false, L.pastDay(new URLSearchParams(location.search).get('day'), L.dayKey()));
+}).catch(failed);

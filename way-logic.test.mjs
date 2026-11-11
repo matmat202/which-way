@@ -118,5 +118,41 @@ ok('every series has a template and a name', S.every((s) => s.fmt.includes('{}')
   eq('every shipped round falls in its band', inBand, n);
 }
 
+// --- the days already served keep their ten (2026-11-11) ---------------------------------
+// Arctic sea ice went live at 2026-11-05 03:22 UTC and re-dealt every day, 11-02..11-04
+// included. Those three play series-1.json again, the list they were dealt from: git
+// 63fa9a92, live until then. 11-04 had run its whole course everywhere east of UTC-3 by then,
+// so its first deal is the one most players got. Pinned by series and month, read with this
+// way-logic.js and both files byte-identical to the live site (11-05 onward) and to git
+// (series-1). A change to the data must add a series-N.json row to SERIES_FILES first.
+{
+  const { createHash } = await import('node:crypto');
+  const file = (f) => readFileSync(new URL('./' + f, import.meta.url));
+  eq('series-1.json is the list first shipped', createHash('sha256').update(file('data/series-1.json')).digest('hex'),
+    'bd1b859b1cce1899f50874ecc08961303c7de314eedd54664bafb055271eb8ec');
+  eq('days play the list they were dealt from', ['2026-11-02', '2026-11-04', '2026-11-05', '2027-01-01', 'practice-x', '', 'day3'].map(L.seriesFile),
+    ['data/series-1.json', 'data/series-1.json', 'data/series.json', 'data/series.json', 'data/series.json', 'data/series.json', 'data/series.json']);
+  const lists = {};
+  const deal = (d) => { const f = L.seriesFile(d); const s = (lists[f] ??= JSON.parse(file(f)).series); return L.roundsFor(s, d, L.questions(s)).map(([si, t]) => `${s[si].id}@${t}`); };
+  const SERVED = {
+    '2026-11-02': ["MCOILWTICO@258","UMCSENT@824","FEDFUNDS@554","BAA10YM@755","EXJPUS@522","HOUST@300","CPIAUCSL@661","PSAVERT@344","EXUSEU@144","T10Y2YM@558"],
+    '2026-11-03': ["TB3MS@1061","T10Y2YM@140","UMCSENT@864","FEDFUNDS@273","MCOILWTICO@248","MORTGAGE30US@282","HOUST@148","CPIAUCSL@452","PSAVERT@325","EXUSEU@193"],
+    '2026-11-04': ["T10Y2YM@334","FEDFUNDS@305","MCOILWTICO@471","GS10@246","HOUST@386","UNRATE@417","CPIAUCSL@586","EXJPUS@390","PSAVERT@258","BAA10YM@590"],
+    '2026-11-05': ["SEAICE@154","HOUST@736","T10Y2YM@527","EXUSEU@219","BAA10YM@539","UNRATE@511","TB3MS@392","PSAVERT@262","CPIAUCSL@664","FEDFUNDS@578"],
+    '2026-11-06': ["T10Y2YM@368","EXUSEU@150","UMCSENT@570","GS10@698","SEAICE@376","HOUST@467","FEDFUNDS@158","BAA10YM@708","PSAVERT@258","UNRATE@685"],
+    '2026-11-07': ["SEAICE@347","UNRATE@407","MCOILWTICO@398","HOUST@576","FEDFUNDS@235","GS10@182","EXUSEU@228","UMCSENT@453","CPIAUCSL@543","T10Y2YM@154"],
+    '2026-11-08': ["BAA10YM@342","FEDFUNDS@292","PSAVERT@635","HOUST@369","TB3MS@514","GS10@364","MORTGAGE30US@240","EXUSEU@286","UMCSENT@644","EXJPUS@460"],
+    '2026-11-09': ["GS10@349","UMCSENT@572","CPIAUCSL@293","HOUST@538","T10Y2YM@383","UNRATE@350","SEAICE@177","EXUSEU@144","EXJPUS@289","MORTGAGE30US@649"],
+    '2026-11-10': ["FEDFUNDS@318","HOUST@590","UNRATE@147","EXUSEU@148","MORTGAGE30US@352","BAA10YM@500","GS10@774","PSAVERT@372","TB3MS@711","CPIAUCSL@200"],
+    '2026-11-11': ["MCOILWTICO@341","BAA10YM@361","TB3MS@649","EXUSEU@268","GS10@805","SEAICE@287","T10Y2YM@470","MORTGAGE30US@246","UNRATE@745","PSAVERT@611"],
+  };
+  for (const [d, want] of Object.entries(SERVED)) eq(`${d}: the ten served`, deal(d), want);
+  // Served days go stale every midnight, so two years from launch are hashed: a change that
+  // re-deals any of them has to be a new SERIES_FILES row, and move this hash on purpose.
+  const h = createHash('sha256');
+  for (let d = '2026-11-02', k = 0; k < 731; k++) { h.update(d + JSON.stringify(deal(d))); const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + 1); d = x.toISOString().slice(0, 10); }
+  eq('two years of tens from launch, unchanged', h.digest('hex'), '1e8f7b7ca9c9aff4559882556025de432c748dd293a37e283289e384aeae8717');
+}
+
 console.log(`${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

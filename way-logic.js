@@ -130,6 +130,19 @@ export function dayKey(d = new Date()) {
 // The first day a daily ten was served. ?day= plays any day from here up to yesterday.
 export const FIRST_DAY = '2026-11-02';
 
+// Which series file deals a day. A day's ten draws from the whole list, so a new series or a
+// refreshed month re-deals every day, served ones included. That happened once: Arctic sea
+// ice went live at 2026-11-05 03:22 UTC and re-dealt 11-02..11-04. So each list that served a
+// day is kept as it was, and a day plays the list it was first dealt from. To change the data,
+// copy series.json to the next series-N.json, add its row here with the first day it did NOT
+// serve, then rebuild (the test's two-year hash fails until this table is right).
+export const SERIES_FILES = [['2026-11-05', 'data/series-1.json']];
+export const seriesFile = (key) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return 'data/series.json';
+  const row = SERIES_FILES.find(([until]) => key < until);
+  return row ? row[1] : 'data/series.json';
+};
+
 export function prevDay(key) {
   const d = new Date(key + 'T12:00:00');
   d.setDate(d.getDate() - 1);
