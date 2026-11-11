@@ -73,7 +73,40 @@ eq('no series twice in a day', new Set(day.map(([si]) => si)).size, 10);
 }
 eq('more rounds than series repeats a series rather than stopping', L.roundsFor(many.slice(0, 3), 'x', L.questions(many.slice(0, 3))).length, 10);
 
+{
+  // Small pools cannot meet every band, so the search widens: the shipped data never does in
+  // two years, so this is the only place the widening is pinned. 60 of these 600 rounds sit
+  // outside their band, which is the widening at work.
+  const { createHash } = await import('node:crypto');
+  const out = [];
+  let wide = 0;
+  for (const k of [1, 2, 3]) {
+    const p = many.slice(0, k), pq = L.questions(p);
+    for (let d = 0; d < 20; d++) {
+      const r = L.roundsFor(p, 'w' + d, pq);
+      out.push(r);
+      r.forEach(([si, t], j) => { const z = pq[si].find((x) => x[0] === t)[1]; if (z < L.BANDS[j][0] || z > L.BANDS[j][1]) wide++; });
+    }
+  }
+  eq('small pools widen their bands', wide, 60);
+  eq('small pools deal the same tens (hash)', createHash('sha256').update(JSON.stringify(out)).digest('hex'), 'c24cad3909a909c17f5c455096a92dc0cae5fed8e04b123eb1f231981154e906');
+}
+eq('more than ten rounds keep the last band', L.roundsFor(many, 'x', qs, 12).length, 12);
+eq('the bands, a landslide first', L.BANDS, [[2, 99], [1.5, 3], [1.2, 2.2], [1, 1.8], [0.8, 1.5], [0.6, 1.2], [0.5, 1], [0.4, 0.8], [0.3, 0.6], [0.15, 0.45]]);
+eq('rng is mulberry32', L.rng(1)(), 0.6270739405881613);
+eq('a pool with nothing to ask deals nothing, and stops', L.roundsFor([{ v: [] }], 'x', [[]]), []);
+{
+  // a straight line: every move is infinitely many sds, so only the filling rule decides
+  const lin = (nulls) => ({ v: Array.from({ length: 200 }, (_, i) => (i < nulls ? null : i)) });
+  eq('the first question is the first full chart, at exactly MIN_FILLED months', [0, 24, 25].map((k) => L.questions([lin(k)])[0][0][0]), [L.HIST - 1, L.HIST - 1, L.HIST]);
+  eq('month 0 counts toward the chart', L.questions([{ v: lin(0).v.map((x, i) => (i >= 1 && i <= 24 ? null : x)) }])[0][0][0], L.HIST - 1);
+  eq('MIN_FILLED is 96 of 120', [L.MIN_FILLED, L.HIST], [96, 120]);
+}
+eq('a lower pick on a fall is right', [L.isRight({ v: [2, ...Array(11).fill(0), 1] }, 0, 0), L.isRight({ v: [2, ...Array(11).fill(0), 1] }, 0, 1)], [true, false]);
+
 // --- days, share, streak ---------------------------------------------------------------
+eq('the first day is a past day', L.pastDay(L.FIRST_DAY, '2026-11-05'), L.FIRST_DAY);
+eq('the first day can be the missed one', L.missedDay('2026-11-04', (d) => d === '2026-11-03'), L.FIRST_DAY);
 eq('day key pads', L.dayKey(new Date(2026, 0, 5, 12)), '2026-01-05');
 eq('prev day crosses a month', L.prevDay('2026-12-01'), '2026-11-30');
 eq('a past day is honoured', L.pastDay('2026-11-03', '2026-11-05'), '2026-11-03');
