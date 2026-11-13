@@ -9,7 +9,7 @@ const store = {
 };
 
 let S = [], QS = [];
-let game = null; // { key, day, practice, past, rounds, picks, showing }
+let game = null; // { key, day, practice, past, rounds, picks, showing, review }
 
 const FILES = {}; // file -> promise of { S, QS }
 const loadSeries = (f) => (FILES[f] ||= fetch(f).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -42,7 +42,7 @@ const marks = () => game.picks.map((p, k) => L.isRight(...at(k), p));
 
 function render() {
   const k = game.picks.length, done = k >= game.rounds.length;
-  const showing = game.showing ?? null;
+  const showing = game.showing ?? game.review ?? null; // review: a finished round reopened from the recap
   $('play').hidden = done && showing == null;
   $('end').hidden = !($('play').hidden);
   drawMarks(showing ?? k);
@@ -83,7 +83,7 @@ function drawRound(k, answered) {
     tag.textContent = right ? 'Right. ' : 'Not quite. ';
     $('out').replaceChildren(tag, L.verdict(s, t));
     $('next').hidden = false;
-    $('next').textContent = k + 1 >= game.rounds.length ? 'See your score' : 'Next';
+    $('next').textContent = game.review != null ? 'Back to your score' : k + 1 >= game.rounds.length ? 'See your score' : 'Next';
   } else {
     $('out').textContent = '';
     $('next').hidden = true;
@@ -99,7 +99,21 @@ function pick(i) {
   $('next').focus({ preventScroll: true });
 }
 
+function review(k) {
+  game.review = k;
+  render();
+  scrollTo(0, 0);
+  $('next').focus({ preventScroll: true });
+}
+
 function next() {
+  if (game.review != null) {
+    const k = game.review;
+    game.review = null;
+    render();
+    $('recap').querySelectorAll('button')[k]?.focus();
+    return;
+  }
   if (game.showing == null) return;
   game.showing = null;
   render();
@@ -173,7 +187,10 @@ function drawEnd() {
     tx.textContent = `${s.name}, ${L.monthLabel(L.monthKey(s.start, t), true)}`;
     const d = document.createElement('span'); d.className = 'd';
     d.textContent = `${L.fmt(s, s.v[t])} → ${L.fmt(s, s.v[t + L.H])} ${L.isUp(s, t) ? '▲' : '▼'}`;
-    li.append(mk, tx, d);
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.k = k;
+    b.append(mk, tx, d);
+    li.append(b);
     return li;
   }));
 }
@@ -186,12 +203,15 @@ async function share() {
 
 $('pick').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) pick(Number(b.dataset.i)); });
 $('next').addEventListener('click', next);
+$('recap').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) review(Number(b.dataset.k)); });
 $('share').addEventListener('click', share);
 $('practice').addEventListener('click', () => start(true).catch(failed));
 $('daily').addEventListener('click', () => { if (location.search) history.replaceState(null, '', location.pathname); start(false).catch(failed); });
 document.addEventListener('keydown', (e) => {
   if (!game || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (game.showing == null && !$('play').hidden) {
+  if (game.review != null) {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); next(); }
+  } else if (game.showing == null && !$('play').hidden) {
     if (e.key === 'ArrowUp' || e.key === '1') { e.preventDefault(); pick(1); }
     else if (e.key === 'ArrowDown' || e.key === '2') { e.preventDefault(); pick(0); }
   } else if (game.showing != null && (e.key === 'Enter' || e.key === ' ')) {
