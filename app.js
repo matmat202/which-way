@@ -23,6 +23,8 @@ function start(practice, past = null) {
   return loadSeries(L.seriesFile(key)).then((p) => {
     S = p.S; QS = p.QS;
     game = { key, day, practice, past: !!past && !practice, rounds: L.roundsFor(S, key, QS), picks: practice ? [] : store.get('ww:' + day, []) };
+    // a reload between answering and Next brings back that round's reveal, not the round after it
+    if (!practice && store.get('ww:' + day + ':seen', game.picks.length) < game.picks.length) game.showing = game.picks.length - 1;
     $('daily').hidden = !practice && !game.past;
     render();
   });
@@ -31,6 +33,7 @@ function start(practice, past = null) {
 function save() {
   if (game.practice) return;
   store.set('ww:' + game.day, game.picks);
+  store.set('ww:' + game.day + ':seen', game.showing == null ? game.picks.length : game.showing);
   if (game.picks.length === game.rounds.length && !game.past) {
     const days = store.get('ww:days', []);
     if (!days.includes(game.day)) { days.push(game.day); store.set('ww:days', days.slice(-400)); }
@@ -116,6 +119,7 @@ function next() {
   }
   if (game.showing == null) return;
   game.showing = null;
+  save();
   render();
   if (!$('play').hidden) $('pick').querySelector('button').focus({ preventScroll: true }); else $('share').focus({ preventScroll: true });
 }
