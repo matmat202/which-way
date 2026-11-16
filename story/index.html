@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Down the stairs, up the lift · Which Way Next?, a story</title>
+<meta name="description" content="A scrolling story from Which Way Next?: since 1948 US unemployment has been lower a year later about three times in five, yet the years it rose, it rose by far more. Shuffle the order of its monthly moves 1,000 times and not one shuffle is as lopsided. Of the game's 15 series, only the mortgage rate shares the shape.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="plot" aria-hidden="true"></div>
+<p id="err" role="alert"></p>
+<main>
+
+<section class="step" data-step="line"><div>
+  <p class="kicker">Which Way Next? · a story</p>
+  <h1>Down the stairs, up the lift</h1>
+  <p>This is the US unemployment rate, every month since <b data-fact="since"></b>: the share
+  of people 16 and over who want work and can't find it.</p>
+  <p>Each month is red if the rate was higher <b data-fact="h"></b> later, grey if lower.
+  <span class="w">Most of the line is grey.</span></p>
+  <p class="small"><span class="k up">higher a year later</span> <span class="k down">lower</span> · Scroll ↓</p>
+</div></section>
+
+<section class="step" data-step="years"><div>
+  <p class="kicker">Chapter 1 · The years</p>
+  <h2>It usually falls, slowly</h2>
+  <p>Now put each month at how far the rate moved over the next year. Of
+  <b data-fact="n_years"></b> such years, <b data-fact="down"></b> ended lower,
+  <span class="w">about three in five</span>.</p>
+  <p>But look at the size. The average falling year took off <b data-fact="fall"></b>. The
+  average rising year added <b data-fact="rise"></b>, <span class="w">three quarters bigger</span>
+  than a falling year: <b data-fact="ratio"></b> times.</p>
+  <p>It isn't 2020. Leave out every year that touches it (those starting <b data-fact="covid"></b>)
+  and the rises are still <b data-fact="nc_ratio"></b> times the falls.</p>
+</div></section>
+
+<section class="step" data-step="shuffle"><div>
+  <p class="kicker">Chapter 2 · Is that just a few big jumps?</p>
+  <h2>Shuffle the months</h2>
+  <p>Keep every month-to-month move the rate ever made, the huge ones included, and shuffle
+  their order. Do it <b data-fact="n_sh"></b> times. Each grey dot is one shuffle: how often
+  its years ended higher, and how big its rises were next to its falls.</p>
+  <p>The typical shuffle rises in <b data-fact="sh_up_med"></b> of years, with rises
+  <b data-fact="sh_ratio_med"></b> times its falls. <span class="w">Not one</span> of the
+  <b data-fact="n_sh"></b> rises as rarely and as hard as the real rate. The nearest any
+  gets is <b data-fact="sh_up_min"></b> of years, and <b data-fact="sh_ratio_max"></b> times.
+  So the shape comes from the order of the months, not from the size of the jumps.</p>
+</div></section>
+
+<section class="step" data-step="lineup"><div>
+  <p class="kicker">Chapter 3 · The rest of the game</p>
+  <h2>Only one other number does it</h2>
+  <p>Which Way Next? asks about <b data-fact="n_series"></b> numbers. Here are the other
+  <b data-fact="n_others"></b>, shuffled 200 times each the same way. Each tail starts where
+  that number's own typical shuffle sits.</p>
+  <p>Interest rates, oil, house building and the rest go every which way. For
+  <b data-fact="n_middle"></b> of them, <span class="w">at least one shuffle in twenty</span> is
+  as lopsided as the real line. <span class="w">Only the</span> <b data-fact="lone"></b>
+  is like unemployment: none of its shuffles is as lopsided as it is.</p>
+</div></section>
+
+<section class="step" data-step="years"><div>
+  <p class="kicker">Coda · What to guess</p>
+  <h2>Guess lower, expect to be wrong loudly</h2>
+  <p>The usual explanation is that firms can lay people off in a month, but hiring them back
+  takes years. Economists have measured the shape for a long time: Salih Neftçi asked it of this very series in 1984, in
+  <a href="https://doi.org/10.1086/261226"><i>Are economic time series asymmetric over the
+  business cycle?</i></a></p>
+  <p>So in <a href="../">Which Way Next?</a>, "lower" is the better bet on unemployment. When
+  it loses, it loses big.</p>
+  <p class="small">Data: FRED series UNRATE, the Bureau of Labor Statistics' civilian
+  unemployment rate, seasonally adjusted, as a percentage of the labor force aged 16 and over,
+  monthly from 1948 (October 2025 was never published). The other series are the game's, from
+  FRED and NSIDC's Sea Ice Index. A year is any 12 months, month to month; shuffles keep every
+  monthly move and change only their order. The build script is
+  <a href="https://github.com/matmat202/which-way/blob/main/story/build_story.py">in the repository</a>.</p>
+</div></section>
+
+</main>
+<script type="module" src="story.js"></script>
+</body>
+</html>
