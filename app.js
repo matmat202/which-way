@@ -128,7 +128,9 @@ function next() {
 // The y range is the history's, widened to the answer's on reveal.
 function drawChart(s, t, answered) {
   // the viewBox follows the box's own width, so 12px labels stay 12px on a phone
-  const W = Math.round(Math.max(320, Math.min(600, $('chart').clientWidth - 16 || 600))), Hh = Math.round(W * 0.42) + 20;
+  // and on a narrow screen it is taller than it is wide-ish: at 0.42 a phone got a 181 px strip
+  // with a third of the screen empty below, and the answer year was hard to read.
+  const W = Math.round(Math.max(320, Math.min(600, $('chart').clientWidth - 16 || 600))), Hh = Math.round(W * (W < 480 ? 0.62 : 0.42)) + 20;
   const pl = 8, pr = 8, pt = 14, pb = 26;
   const lo = t - L.HIST + 1, hi = t + L.H;
   const past = L.points(s, lo, t), fut = L.points(s, t, hi);
