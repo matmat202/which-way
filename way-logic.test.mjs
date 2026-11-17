@@ -104,6 +104,23 @@ eq('a pool with nothing to ask deals nothing, and stops', L.roundsFor([{ v: [] }
 }
 eq('a lower pick on a fall is right', [L.isRight({ v: [2, ...Array(11).fill(0), 1] }, 0, 0), L.isRight({ v: [2, ...Array(11).fill(0), 1] }, 0, 1)], [true, false]);
 
+// --- the fixed rules, on the end screen ---------------------------------------------------
+{
+  // four rounds with known answers: [year before, at t, a year later]
+  const mk = (a, b, c) => ({ v: [a, ...Array(11).fill(null), b, ...Array(11).fill(null), c] });
+  const R = [mk(1, 2, 3), mk(3, 2, 1), mk(1, 2, 1), mk(null, 2, 3), mk(2, 2, 1)];
+  const rounds = R.map((_, i) => [i, 12]);
+  eq('last year: up, down, up, missing, flat', R.map((s) => L.lastYearUp(s, 12)), [true, false, true, null, null]);
+  // answers: up, down, down, up, down. same way: right, right, wrong, no pick, no pick
+  eq('rule scores on five known rounds', L.ruleScores(R, rounds), { up: 2, down: 3, same: 2 });
+  eq('rule scores of no rounds', L.ruleScores(R, []), { up: 0, down: 0, same: 0 });
+  const r = { up: 6, down: 4, same: 7 };
+  eq('rules line names every rule', L.rulesLine(5, r), 'On these ten, "always higher" got 6, "always lower" 4, and "same way as the year before" 7. The best of them beat you by 2.');
+  eq('a tie with the best', L.rulesLine(7, r).split('. ').pop(), 'You tied the best of them.');
+  eq('beating them', L.rulesLine(8, r).split('. ').pop(), 'You beat all three.');
+  eq('the best can be "always lower"', L.rulesLine(8, { up: 1, down: 9, same: 3 }).split('. ').pop(), 'The best of them beat you by 1.');
+}
+
 // --- days, share, streak ---------------------------------------------------------------
 eq('the first day is a past day', L.pastDay(L.FIRST_DAY, '2026-11-05'), L.FIRST_DAY);
 eq('the first day can be the missed one', L.missedDay('2026-11-04', (d) => d === '2026-11-03'), L.FIRST_DAY);

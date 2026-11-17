@@ -179,6 +179,7 @@ function drawEnd() {
   $('streak').textContent = game.practice ? 'Practice rounds do not count toward your streak.'
     : game.past ? 'Earlier days do not count toward your streak.'
     : `${st === 1 ? 'First day of a streak' : `${st}-day streak`}. A new ten tomorrow.`;
+  $('rules').textContent = L.rulesLine(score, L.ruleScores(S, game.rounds));
   $('share').hidden = game.practice;
   const miss = game.practice ? null : L.missedDay(game.day, (k) => store.get('ww:' + k, []).length >= game.rounds.length);
   $('earlier').hidden = !miss;

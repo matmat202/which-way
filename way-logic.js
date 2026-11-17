@@ -98,6 +98,30 @@ export function roundsFor(series, seedStr, qs = questions(series), n = ROUNDS) {
 export function isUp(s, t) { return s.v[t + H] > s.v[t]; }
 export function isRight(s, t, pick) { return (isUp(s, t) ? 1 : 0) === pick; }
 
+// The fixed rules every series was vetted against (build.py --stats), scored on a day's
+// rounds: "always higher", "always lower", and "the same way as the year before the chart
+// ends". That last one picks nothing when the year before is missing or flat, and a round
+// it does not pick is a round it does not get.
+export function lastYearUp(s, t) {
+  const p = s.v[t - H];
+  return p == null || p === s.v[t] ? null : s.v[t] > p;
+}
+export function ruleScores(series, rounds) {
+  let up = 0, same = 0;
+  for (const [si, t] of rounds) {
+    const u = isUp(series[si], t);
+    if (u) up++;
+    if (lastYearUp(series[si], t) === u) same++;
+  }
+  return { up, down: rounds.length - up, same };
+}
+export function rulesLine(score, r) {
+  const best = Math.max(r.up, r.down, r.same);
+  const vs = score > best ? 'You beat all three.' : score === best ? 'You tied the best of them.'
+    : `The best of them beat you by ${best - score}.`;
+  return `On these ten, "always higher" got ${r.up}, "always lower" ${r.down}, and "same way as the year before" ${r.same}. ${vs}`;
+}
+
 // A rate (unit % or points) moves in points; a level (dollars, yen, an index) in percent.
 export const isRate = (s) => s.unit.startsWith('%') || s.unit === 'points';
 
