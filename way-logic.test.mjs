@@ -153,6 +153,14 @@ eq('Arctic sea ice averaged 3.57M km² in September 2012 (NSIDC record low)', Ma
 }
 eq('sea ice is missing for December 1987 (the satellite gap), not zero', val('SEAICE', '1987-12'), null);
 eq('15 series', S.length, 15);
+// lastYearUp compares s.v[t] with s.v[t-H] only AFTER a `===` guard rules out a tie, so
+// `>` and `>=` there are the same function — but only while the values are numbers. One
+// string in the column ("0" vs 0) ties under `>=` and not under `===`, and the guard
+// would miss it. That is an assumption about the DATA, so the data is what asserts it.
+ok('every series value is a number or null (what makes the lastYearUp tie-guard total)',
+   S.every((x) => x.v.every((v) => v === null || typeof v === 'number')),
+   S.map((x) => [x.id, x.v.find((v) => v !== null && typeof v !== 'number')])
+    .filter(([, v]) => v !== undefined).map(([id, v]) => `${id}:${JSON.stringify(v)}`).join(' '));
 ok('every series has a template and a name', S.every((s) => s.fmt.includes('{}') && s.name && s.unit));
 {
   const QS = L.questions(S);
