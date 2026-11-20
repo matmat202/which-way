@@ -132,6 +132,15 @@ eq('before the first day is not', L.pastDay('2026-11-01', '2026-11-05'), null);
 eq('an impossible date is not', L.pastDay('2026-11-31', '2026-12-05'), null);
 eq('missed day skips played days', L.missedDay('2026-11-05', (d) => d === '2026-11-04'), '2026-11-03');
 eq('share text', L.shareText('2026-11-02', [true, false, true]), 'Which Way Next? 2026-11-02: 2/3\n🟩🟥🟩');
+{
+  const m = [true, true, false, true, true, true, false, true, true, false];   // 7 right
+  const line = (r, mk = m) => L.shareText('2026-11-02', mk, r).split('\n')[2];
+  eq('share: beaten rules name the best', line({ up: 3, down: 7 - 1, same: 4 }), 'Beat every fixed rule; the best, "always lower", got 6.');
+  eq('share: a tie with the best', line({ up: 7, down: 3, same: 5 }), 'Tied the best fixed rule, "always higher", at 7.');
+  eq('share: the best can be "same way"', line({ up: 4, down: 6, same: 9 }), 'The best fixed rule, "same way as the year before", got 9.');
+  eq('share: tied rules name the first', line({ up: 5, down: 5, same: 2 }, m.map(() => false)), 'The best fixed rule, "always higher", got 5.');
+  eq('share: the head is unchanged', L.shareText('2026-11-02', m, { up: 1, down: 9, same: 1 }).split('\n').slice(0, 2).join('\n'), 'Which Way Next? 2026-11-02: 7/10\n🟩🟩🟥🟩🟩🟩🟥🟩🟩🟥');
+}
 eq('streak counts back from today', L.streak(['2026-11-01', '2026-11-02', '2026-11-03'], '2026-11-03'), 3);
 eq('streak survives not yet playing today', L.streak(['2026-11-01', '2026-11-02'], '2026-11-03'), 2);
 eq('streak breaks on a gap', L.streak(['2026-11-01', '2026-11-03'], '2026-11-03'), 1);

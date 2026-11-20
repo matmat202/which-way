@@ -185,9 +185,19 @@ export function missedDay(from, done) {
   return null;
 }
 
-export function shareText(day, marks) {
+// With the fixed rules' scores (ruleScores) a third line says how hard the day was:
+// a bare "6/10" cannot tell a friend whether always-lower got 9 or 3.
+export const RULE_NAMES = { up: '"always higher"', down: '"always lower"', same: '"same way as the year before"' };
+export function shareText(day, marks, r) {
   const score = marks.filter(Boolean).length;
-  return `Which Way Next? ${day}: ${score}/${marks.length}\n${marks.map((m) => (m ? '🟩' : '🟥')).join('')}`;
+  const head = `Which Way Next? ${day}: ${score}/${marks.length}\n${marks.map((m) => (m ? '🟩' : '🟥')).join('')}`;
+  if (!r) return head;
+  const k = ['up', 'down', 'same'].reduce((a, b) => (r[b] > r[a] ? b : a));
+  const best = r[k], name = RULE_NAMES[k];
+  const line = score > best ? `Beat every fixed rule; the best, ${name}, got ${best}.`
+    : score === best ? `Tied the best fixed rule, ${name}, at ${best}.`
+    : `The best fixed rule, ${name}, got ${best}.`;
+  return `${head}\n${line}`;
 }
 
 export function streak(days, today) {

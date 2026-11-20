@@ -203,7 +203,7 @@ function drawEnd() {
 }
 
 async function share() {
-  const text = L.shareText(game.day, marks()) + '\nhttps://matmat202.github.io/which-way/';
+  const text = L.shareText(game.day, marks(), L.ruleScores(S, game.rounds)) + '\nhttps://matmat202.github.io/which-way/';
   try { await navigator.clipboard.writeText(text); $('copied').textContent = 'Copied.'; }
   catch { $('copied').textContent = text; }
 }
