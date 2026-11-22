@@ -181,6 +181,7 @@ function drawEnd() {
     : `${st === 1 ? 'First day of a streak' : `${st}-day streak`}. A new ten tomorrow.`;
   $('rules').textContent = L.rulesLine(score, L.ruleScores(S, game.rounds));
   $('share').hidden = game.practice;
+  $('share').textContent = sheet() ? 'Share result' : 'Copy result';
   const miss = game.practice ? null : L.missedDay(game.day, (k) => store.get('ww:' + k, []).length >= game.rounds.length);
   $('earlier').hidden = !miss;
   if (miss) { $('earlier').href = `?day=${miss}`; $('earlier').textContent = miss === L.prevDay(L.dayKey()) ? "Missed yesterday? Play yesterday's ten" : `Play the ten from ${miss}`; }
@@ -202,8 +203,16 @@ function drawEnd() {
   }));
 }
 
+// A phone gets its share sheet (straight to Messages), a desktop the clipboard. Read at click
+// time as well as at render, so the label and the action never disagree.
+const sheet = () => matchMedia('(pointer: coarse)').matches && typeof navigator.share === 'function';
+
 async function share() {
   const text = L.shareText(game.day, marks(), L.ruleScores(S, game.rounds)) + '\nhttps://matmat202.github.io/which-way/';
+  if (sheet()) {
+    try { await navigator.share({ text }); $('copied').textContent = ''; return; }
+    catch (e) { if (e && e.name === 'AbortError') return; } // dismissed; anything else falls back to copying
+  }
   try { await navigator.clipboard.writeText(text); $('copied').textContent = 'Copied.'; }
   catch { $('copied').textContent = text; }
 }
