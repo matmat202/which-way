@@ -56,6 +56,21 @@ eq('a rate change', L.change({ ...pct, v: yr(5.1, 8.7) }, 0), 'up 3.6 points');
 eq('a one-point change is singular', L.change({ ...pct, v: yr(5, 4) }, 0), 'down 1.0 point');
 eq('a level change', L.change({ ...oil, v: yr(74.12, 133.37) }, 0), 'up 80%');
 eq('a small level change keeps a decimal', L.change({ ...oil, v: yr(100, 100.5) }, 0), 'up 0.5%');
+// change()'s two formats are all boundaries, and none of the four cases above sits on one.
+const idx = { unit: '%', fmt: '{}%', dp: 0 };   // dp 0 is real: one shipped series has it
+eq('a rate at exactly 0.1 keeps the series dp, not two places', L.change({ ...pct, v: yr(0, 0.1) }, 0), 'up 0.1 points');
+eq('under 0.1 a rate gets two places', L.change({ ...pct, v: yr(5, 5.05) }, 0), 'up 0.05 points');
+eq('a rate that did not move is down, not up', L.change({ ...pct, v: yr(5, 5) }, 0), 'down 0.00 points');
+eq('a two-place rate keeps both places', L.change({ ...pts, v: yr(1, 3.5) }, 0), 'up 2.50 points');
+eq('a dp-0 rate falls back to one place', L.change({ ...idx, v: yr(1, 3.5) }, 0), 'up 2.5 points');
+eq('a level that did not move is down, not up', L.change({ ...oil, v: yr(100, 100) }, 0), 'down 0.0%');
+eq('a level between 1% and 2% is rounded whole', L.change({ ...oil, v: yr(3, 3.05) }, 0), 'up 2%');
+// The one boundary here with no test: `p < 1` vs `p <= 1`. p = |100*(b/a - 1)| can never be
+// exactly 1 in doubles — b/a lands in [1,2) so the subtraction is exact (Sterbenz), and no
+// double q has q - 1 === 0.01 (1 + 0.01 rounds to a q whose q - 1 is 0.010000000000000009).
+// Swept 2,521,752 pairs, including every value in both shipped series: no exact hit. That
+// mutant is equivalent, and is accepted in projects/mutation-audit/pins.json rather than
+// pinned by a test that cannot be written (2026-11-22).
 eq('the verdict names the answer month', L.verdict({ ...pct, start: '2008-03', v: yr(5.1, 8.7) }, 0), 'By March 2009 it was 8.7%, up 3.6 points from 5.1%.');
 
 // --- the day's ten ---------------------------------------------------------------------
