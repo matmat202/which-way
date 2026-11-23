@@ -134,6 +134,31 @@ eq('a lower pick on a fall is right', [L.isRight({ v: [2, ...Array(11).fill(0), 
   eq('a tie with the best', L.rulesLine(7, r).split('. ').pop(), 'You tied the best of them.');
   eq('beating them', L.rulesLine(8, r).split('. ').pop(), 'You beat all three.');
   eq('the best can be "always lower"', L.rulesLine(8, { up: 1, down: 9, same: 3 }).split('. ').pop(), 'The best of them beat you by 1.');
+
+  // the month at t missing, the year before 0: `null > 0` is false, which read as "lower"
+  eq('last year: a missing month picks nothing', [L.lastYearUp(mk(0, null, 1), 12), L.lastYearUp(mk(5, null, 1), 12)], [null, null]);
+  eq('a missing month is no same-way pick', L.ruleScores([mk(0, null, 1)], [[0, 12]]).same, 0);
+}
+
+// --- the record across days ---------------------------------------------------------------
+{
+  const mk = (a, b, c) => ({ v: [a, ...Array(11).fill(null), b, ...Array(11).fill(null), c] });
+  // answers up, down, down, up, down; rules: up 2, down 3, same 2 -> best 3
+  const R = [mk(1, 2, 3), mk(3, 2, 1), mk(1, 2, 1), mk(null, 2, 3), mk(2, 2, 1)];
+  const rounds = R.map((_, i) => [i, 12]);
+  eq('day result: all right', L.dayResult(R, rounds, [1, 0, 0, 1, 0]), { score: 5, best: 3 });
+  eq('day result: picks in round order', L.dayResult(R, rounds, [1, 0, 1, 0, 0]), { score: 3, best: 3 });
+  eq('day result: the best can be "same way"', L.dayResult([mk(1, 2, 3), mk(3, 2, 1)], [[0, 12], [1, 12]], [0, 0]),
+    { score: 1, best: 2 });
+  const res = [{ score: 7, best: 6 }, { score: 5, best: 5 }, { score: 4, best: 8 }, { score: 7, best: 7 }, { score: 10, best: 6 }];
+  const rec = L.record(res);
+  eq('record counts days', rec.n, 5);
+  eq('record mean', rec.mean, 6.6);
+  eq('record beat and tied', [rec.beat, rec.tied], [2, 2]);
+  eq('record histogram, 0..10', rec.hist, [0, 0, 0, 0, 1, 1, 0, 2, 0, 0, 1]);
+  eq('record of nothing', L.record([]), { n: 0, mean: 0, beat: 0, tied: 0, hist: Array(11).fill(0) });
+  eq('record line', L.recordLine(rec), 'Your record: 5 days, 6.6 right on average. You beat every fixed rule on 2 days and tied the best on 2 days.');
+  eq('record line, one day', L.recordLine(L.record([{ score: 3, best: 3 }])), 'Your record: 1 day, 3.0 right on average. You beat every fixed rule on 0 days and tied the best on 1 day.');
 }
 
 // --- days, share, streak ---------------------------------------------------------------

@@ -180,6 +180,7 @@ function drawEnd() {
     : game.past ? 'Earlier days do not count toward your streak.'
     : `${st === 1 ? 'First day of a streak' : `${st}-day streak`}. A new ten tomorrow.`;
   $('rules').textContent = L.rulesLine(score, L.ruleScores(S, game.rounds));
+  drawRecord(game, score);
   $('share').hidden = game.practice;
   $('share').textContent = sheet() ? 'Share result' : 'Copy result';
   const miss = game.practice ? null : L.missedDay(game.day, (k) => store.get('ww:' + k, []).length >= game.rounds.length);
@@ -201,6 +202,37 @@ function drawEnd() {
     li.append(b);
     return li;
   }));
+}
+
+// Every daily ten finished in this browser, re-scored from its stored picks against the list
+// that day was dealt from (L.dayResult). Shown from the second day on; practice has none.
+let recordFor = null;
+function drawRecord(g, score) {
+  $('record').hidden = true;
+  if (g.practice) return;
+  recordFor = g;
+  const days = [];
+  for (let d = L.dayKey(); d >= L.FIRST_DAY; d = L.prevDay(d)) {
+    const picks = store.get('ww:' + d, []);
+    if (picks.length >= L.ROUNDS) days.push([d, picks]);
+  }
+  Promise.all(days.map(([d, picks]) => loadSeries(L.seriesFile(d))
+    .then((p) => L.dayResult(p.S, L.roundsFor(p.S, d, p.QS), picks)))).then((res) => {
+    if (recordFor !== g || $('end').hidden || res.length < 2) return;
+    const rec = L.record(res), top = Math.max(...rec.hist);
+    $('recline').textContent = L.recordLine(rec);
+    $('hist').setAttribute('aria-label', 'Days by score: ' + rec.hist.map((c, k) => `${k} right, ${c}`).join('; '));
+    $('hist').replaceChildren(...rec.hist.map((c, k) => {
+      const col = document.createElement('span');
+      col.className = k === score ? 'now' : '';
+      col.title = `${c} day${c === 1 ? '' : 's'} with ${k} right`;
+      const bar = document.createElement('i');
+      bar.style.height = `${Math.round(44 * c / top)}px`;
+      col.append(bar, String(k));
+      return col;
+    }));
+    $('record').hidden = false;
+  }).catch(() => {});
 }
 
 // A phone gets its share sheet (straight to Messages), a desktop the clipboard. Read at click

@@ -100,11 +100,12 @@ export function isRight(s, t, pick) { return (isUp(s, t) ? 1 : 0) === pick; }
 
 // The fixed rules every series was vetted against (build.py --stats), scored on a day's
 // rounds: "always higher", "always lower", and "the same way as the year before the chart
-// ends". That last one picks nothing when the year before is missing or flat, and a round
+// ends". That last one picks nothing when either end of the year before is missing (a null
+// current value once read as "lower": null > 0 is false) or the year was flat, and a round
 // it does not pick is a round it does not get.
 export function lastYearUp(s, t) {
   const p = s.v[t - H];
-  return p == null || p === s.v[t] ? null : s.v[t] > p;
+  return p == null || s.v[t] == null || p === s.v[t] ? null : s.v[t] > p;
 }
 export function ruleScores(series, rounds) {
   let up = 0, same = 0;
@@ -120,6 +121,31 @@ export function rulesLine(score, r) {
   const vs = score > best ? 'You beat all three.' : score === best ? 'You tied the best of them.'
     : `The best of them beat you by ${best - score}.`;
   return `On these ten, "always higher" got ${r.up}, "always lower" ${r.down}, and "same way as the year before" ${r.same}. ${vs}`;
+}
+
+// The end screen's record: every daily ten finished in this browser, scored again from its
+// stored picks against the series list that day was dealt from, so nothing new is stored and
+// days played before the record existed count too. best is the day's best fixed rule.
+export function dayResult(series, rounds, picks) {
+  let score = 0;
+  rounds.forEach(([si, t], k) => { if (isRight(series[si], t, picks[k])) score++; });
+  const r = ruleScores(series, rounds);
+  return { score, best: Math.max(r.up, r.down, r.same) };
+}
+export function record(results) {
+  const hist = Array(ROUNDS + 1).fill(0);
+  let sum = 0, beat = 0, tied = 0;
+  for (const { score, best } of results) {
+    hist[score]++; sum += score;
+    if (score > best) beat++; else if (score === best) tied++;
+  }
+  const n = results.length;
+  return { n, mean: n ? sum / n : 0, beat, tied, hist };
+}
+export function recordLine(rec) {
+  const days = (k) => `${k} day${k === 1 ? '' : 's'}`;
+  return `Your record: ${days(rec.n)}, ${rec.mean.toFixed(1)} right on average. `
+    + `You beat every fixed rule on ${days(rec.beat)} and tied the best on ${days(rec.tied)}.`;
 }
 
 // A rate (unit % or points) moves in points; a level (dollars, yen, an index) in percent.
