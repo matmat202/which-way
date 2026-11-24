@@ -261,5 +261,19 @@ ok('every series has a template and a name', S.every((s) => s.fmt.includes('{}')
   eq('two years of tens from launch, unchanged', h.digest('hex'), '1e8f7b7ca9c9aff4559882556025de432c748dd293a37e283289e384aeae8717');
 }
 
+// --- every earlier ten (pastDays) -------------------------------------------------------
+{
+  const P = L.pastDays('2026-11-05', { '2026-11-03': 7, '2026-11-02': 0, '2026-11-05': 9 });
+  eq('earlier days: yesterday back to the first, newest first, today left out', P.map((d) => d.day), ['2026-11-04', '2026-11-03', '2026-11-02']);
+  eq('earlier days: a played day keeps its score, a 0 included; unplayed is null', P.map((d) => d.score), [null, 7, 0]);
+  eq('earlier days: short labels, no leading zero', P.map((d) => d.label), ['Nov 4', 'Nov 3', 'Nov 2']);
+  eq('earlier days: across a month end', L.pastDays('2026-12-02', {}).slice(0, 3).map((d) => [d.day, d.label]),
+    [['2026-12-01', 'Dec 1'], ['2026-11-30', 'Nov 30'], ['2026-11-29', 'Nov 29']]);
+  eq('earlier days: 30 days from 11-02 to 12-01', L.pastDays('2026-12-02', {}).length, 30);
+  eq('earlier days: none on the first day', L.pastDays(L.FIRST_DAY, {}), []);
+  eq('earlier days summary', L.pastSummary(P), 'Every earlier ten (3 days, 2 played)');
+  eq('earlier days summary, one day', L.pastSummary(L.pastDays('2026-11-03', {})), 'Every earlier ten (1 day, 0 played)');
+}
+
 console.log(`${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

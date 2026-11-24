@@ -211,6 +211,21 @@ export function missedDay(from, done) {
   return null;
 }
 
+// Every earlier daily ten, newest first: the end screen lists them so a player can reach any
+// day, not only the newest one they missed. scores maps a finished day to its score; a day
+// absent from it is unplayed (score null).
+export function pastDays(today, scores) {
+  const out = [];
+  for (let d = prevDay(today); d >= FIRST_DAY; d = prevDay(d)) {
+    out.push({ day: d, label: `${MONTHS[Number(d.slice(5, 7)) - 1].slice(0, 3)} ${Number(d.slice(8))}`, score: d in scores ? scores[d] : null });
+  }
+  return out;
+}
+export function pastSummary(days) {
+  const played = days.filter((d) => d.score != null).length;
+  return `Every earlier ten (${days.length} day${days.length === 1 ? '' : 's'}, ${played} played)`;
+}
+
 // With the fixed rules' scores (ruleScores) a third line says how hard the day was:
 // a bare "6/10" cannot tell a friend whether always-lower got 9 or 3.
 export const RULE_NAMES = { up: '"always higher"', down: '"always lower"', same: '"same way as the year before"' };

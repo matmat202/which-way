@@ -209,6 +209,7 @@ function drawEnd() {
 let recordFor = null;
 function drawRecord(g, score) {
   $('record').hidden = true;
+  $('days').hidden = true;
   if (g.practice) return;
   recordFor = g;
   const days = [];
@@ -218,7 +219,9 @@ function drawRecord(g, score) {
   }
   Promise.all(days.map(([d, picks]) => loadSeries(L.seriesFile(d))
     .then((p) => L.dayResult(p.S, L.roundsFor(p.S, d, p.QS), picks)))).then((res) => {
-    if (recordFor !== g || $('end').hidden || res.length < 2) return;
+    if (recordFor !== g || $('end').hidden) return;
+    drawDays(g, Object.fromEntries(days.map(([d], k) => [d, res[k].score])));
+    if (res.length < 2) return;
     const rec = L.record(res), top = Math.max(...rec.hist);
     $('recline').textContent = L.recordLine(rec);
     $('hist').setAttribute('aria-label', 'Days by score: ' + rec.hist.map((c, k) => `${k} right, ${c}`).join('; '));
@@ -233,6 +236,26 @@ function drawRecord(g, score) {
     }));
     $('record').hidden = false;
   }).catch(() => {});
+}
+
+// Every earlier ten as a link, with your score on the ones you finished, so any day is a tap
+// away rather than only the newest one missed (or a ?day= typed by hand).
+function drawDays(g, scores) {
+  const P = L.pastDays(L.dayKey(), scores);
+  $('days').hidden = !P.length;
+  $('dayssum').textContent = L.pastSummary(P);
+  $('daygrid').replaceChildren(...P.map(({ day, label, score }) => {
+    const a = document.createElement('a');
+    a.href = `?day=${day}`;
+    a.dataset.day = day;
+    if (day === g.day) a.className = 'now';
+    if (score != null) a.classList.add('done');
+    const b = document.createElement('b'); b.textContent = label;
+    const sc = document.createElement('span'); sc.textContent = score == null ? 'play' : `${score}/${L.ROUNDS}`;
+    a.append(b, sc);
+    a.setAttribute('aria-label', `${day}: ${score == null ? 'not played' : `${score} of ${L.ROUNDS} right`}`);
+    return a;
+  }));
 }
 
 // A phone gets its share sheet (straight to Messages), a desktop the clipboard. Read at click
